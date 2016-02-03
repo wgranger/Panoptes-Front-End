@@ -23,8 +23,11 @@ module.exports = React.createClass
     onChange: Function.prototype
 
   getInitialState: ->
-    naturalWidth: 0
-    naturalHeight: 0
+    console.log "--> getInitialState::@props.naturalWidth", @props.naturalWidth
+    naturalWidth: @props.naturalWidth
+    naturalHeight: @props.naturalHeight
+    naturalX: 0,
+    naturalY: 0
     showWarning: false
     sizeRect: null
     alreadySeen: false
@@ -47,6 +50,10 @@ module.exports = React.createClass
   componentWillReceiveProps: (nextProps) ->
     if nextProps.annotation isnt @props.annotation
       @handleAnnotationChange @props.annotation, nextProps.annotation
+    @setState
+      naturalWidth: nextProps.naturalWidth
+      naturalHeight: nextProps.naturalHeight
+
 
   handleAnnotationChange: (oldAnnotation, currentAnnotation) ->
     if oldAnnotation?
@@ -84,11 +91,42 @@ module.exports = React.createClass
   toggleWarning: ->
     @setState showWarning: not @state.showWarning
 
-  render: ->
+  zoom: (change) ->
+    newNaturalWidth = @state.naturalWidth * change;
+    newNaturalHeight = @state.naturalHeight * change;
+    
+    newNaturalX = @state.naturalX - (newNaturalWidth - @state.naturalWidth)/2;
+    newNaturalY = @state.naturalY - (newNaturalHeight - @state.naturalHeight)/2;
+    
+    @setState
+      naturalWidth: newNaturalWidth, 
+      naturalHeight: newNaturalHeight,
+      naturalX: newNaturalX,
+      naturalY:newNaturalY
+
+  zoomReset: ->
+    @setState
+      naturalWidth: @props.naturalWidth, 
+      naturalHeight: @props.naturalHeight,
+      naturalX: 0,
+      naturalY: 0
+
+  panHorizontal:(direction) ->
+    return if this.state.naturalX == 0 || this.state.naturalY == 0   
+    @setState
+      naturalX: @state.naturalX * direction
+
+  panVertical:(direction)->
+    @setState
+      naturalY: @state.naturalY * direction
+
+  render: ->    
     taskDescription = @props.workflow.tasks[@props.annotation?.task]
     TaskComponent = tasks[taskDescription?.type]
     {type, format, src} = getSubjectLocation @props.subject, @props.frame
-
+    
+    createdViewBox = "#{@state.naturalX} #{@state.naturalY} #{@state.naturalWidth} #{@state.naturalHeight}"
+    
     svgStyle = {}
     if type is 'image' and not @props.loading
       # Images are rendered again within the SVG itself.
@@ -124,7 +162,7 @@ module.exports = React.createClass
         {if BeforeSubject?
           <BeforeSubject {...hookProps} />}
 
-        <svg style=svgStyle viewBox="0 0 #{@props.naturalWidth} #{@props.naturalHeight}" {...svgProps}>
+        <svg style=svgStyle viewBox={createdViewBox} {...svgProps}>
           <rect ref="sizeRect" width={@props.naturalWidth} height={@props.naturalHeight} fill="rgba(0, 0, 0, 0.01)" fillOpacity="0.01" stroke="none" />
 
           {if type is 'image'
@@ -137,7 +175,15 @@ module.exports = React.createClass
             <PersistInsideSubject key={anyTaskName} {...hookProps} />}
         </svg>
         {@props.children}
-
+        <span>
+          <button className="pan-left fa fa-arrow-circle-left" onClick={ @panHorizontal.bind(this, .7) }> </button>
+          <button className="pan-left fa fa-arrow-circle-up" onClick={@panVertical.bind(this, .7)}> </button>
+          <button className="pan-left fa fa-arrow-circle-down" onClick={@panVertical.bind(this, 1.3)}> </button>
+          <button className="pan-left fa fa-arrow-circle-right" onClick={@panHorizontal.bind(this, 1.3)}> </button>
+          <button className="zoom-out" onClick={ @zoom.bind(this, 1.1) }>-</button>
+          <button className="zoom-in" onClick={ @zoom.bind(this,.9) } >+</button>
+          <button className="reset" onClick={ this.zoomReset } >Reset</button>
+        </span>
         {if @state.alreadySeen
           <button type="button" className="warning-banner" onClick={@toggleWarning}>
             Already seen!
