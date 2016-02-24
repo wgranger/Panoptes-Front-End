@@ -23,28 +23,20 @@ TutorialStepEditor = React.createClass
       console.log 'TutorialStepEditor onRemove', arguments
 
   render: ->
-    <div style={
-      border: '1px solid'
-      marginBottom: '1em'
-    }>
+    <div className="tutorial-step-editor">
       <header>
-        <button type="button" onClick={@props.onRemove}>Remove step</button>
+        <button type="button" className="secret-button" onClick={@props.onRemove}>Remove step</button>
       </header>
-      <div>
-        <header>Media</header>
+      <p>
         {if @props.media?
-          <div>
-            <img src={@props.media.src} style={
-              maxHeight: '5em'
-              maxWidth: '100%'
-            } />
-            <button type="button" className="minor-button" onClick={@props.onMediaClear}>Clear media</button>
-          </div>}
-        <FileButton className="standard-button" onSelect={@handleMediaChange}>Select</FileButton>
-      </div>
+          <span>
+            <img className="tutorial-step-editor-media" src={@props.media.src} />{' '}
+            <button type="button" className="minor-button" onClick={@props.onMediaClear}>Clear</button>
+          </span>}{' '}
+        <FileButton className="standard-button" onSelect={@handleMediaChange}>Select media</FileButton>
+      </p>
       <div>
-        <header>Content</header>
-        <MarkdownEditor value={@props.step.content} onChange={@handleContentChange} />
+        <MarkdownEditor className="full" value={@props.step.content} onChange={@handleContentChange} />
       </div>
     </div>
 
@@ -73,12 +65,8 @@ TutorialEditor = React.createClass
       console.log 'TutorialEditor onChange', arguments
 
   render: ->
-    <div>
-      <div>
-        <p>Here’s some text all about the tutorial editor. Lorem ipsum dolor sit amet, etc.</p>
-        <p><strong>Work in progress.</strong></p>
-      </div>
-      <div>
+    <div className="columns-container">
+      <div style={maxWidth: '50ch'}>
         {if @props.tutorial.steps.length is 0
           <p>This tutorial has no steps.</p>
         else
@@ -93,9 +81,13 @@ TutorialEditor = React.createClass
               onChange={@props.onStepChange.bind null, i}
               onRemove={@props.onStepRemove.bind null, i}
             />}
+        <div>
+          <button type="button" onClick={@props.onStepAdd}>Add a step</button>
+        </div>
       </div>
       <div>
-        <button type="button" onClick={@props.onStepAdd}>Add a step</button>
+        <p>Here’s some text all about the tutorial editor. Lorem ipsum dolor sit amet, etc.</p>
+        <p><strong>Work in progress.</strong></p>
       </div>
     </div>
 
