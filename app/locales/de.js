@@ -10,7 +10,7 @@ export default {
     doneAndTalk: 'Done & Talk',
     dontShowMinicourse: 'Do not show mini-course in the future',
     letsGo: 'Let’s go!',
-    next: 'Next',
+    next: 'oof',
     optOut: 'Opt out',
     taskTabs: {
       taskTab: 'Task',
